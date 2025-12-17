@@ -9,10 +9,8 @@ from logs import router as logs_router
 from telemetry_ws import router as telemetry_ws_router
 from voice_agent import router as voice_router
 from auth_routes import router as auth_router
-import threading
 
 from telemetry import router as telemetry_router
-from telemetry_simulator import telemetry_simulator_loop
 
 # Phase 3 (workflow / closure)
 import rca
@@ -253,14 +251,6 @@ def seed_test_data():
 # ----------------------------
 # RUN SERVER
 # ----------------------------
-
-@app.on_event("startup")
-def start_background_services():
-    threading.Thread(
-        target=telemetry_simulator_loop,
-        daemon=True
-    ).start()
-
 
 if __name__ == "__main__":
     import uvicorn

@@ -1,5 +1,6 @@
 import time
 import random
+import threading
 from datetime import datetime
 from redis_client import set_telemetry
 from db import telemetry_col, vehicles_col  # <-- your vehicles collection
@@ -7,6 +8,10 @@ from alerts import create_alert
 
 # keep last known state per vehicle (keyed by VIN so it matches telemetry API)
 STATE = {}
+
+# simple one-shot guard so we don't start multiple simulator threads
+_SIMULATOR_STARTED = False
+_SIMULATOR_THREAD: threading.Thread | None = None
 
 
 def _check_and_create_alerts(vehicle_db_id, prev_state: dict, current: dict):
@@ -109,3 +114,19 @@ def telemetry_simulator_loop():
             # v still includes "_id" even when projecting "vin"
             generate(vehicle_vin=v["vin"], vehicle_db_id=v["_id"])
         time.sleep(3)
+
+
+def start_telemetry_simulator_if_needed():
+    """
+    Start the background telemetry simulator loop once.
+    Safe to call multiple times; only the first call actually starts the thread.
+    """
+    global _SIMULATOR_STARTED, _SIMULATOR_THREAD
+    if _SIMULATOR_STARTED:
+        return
+
+    _SIMULATOR_STARTED = True
+    print("[SIM] Starting telemetry simulator loop (lazy start)")
+    thread = threading.Thread(target=telemetry_simulator_loop, daemon=True)
+    thread.start()
+    _SIMULATOR_THREAD = thread

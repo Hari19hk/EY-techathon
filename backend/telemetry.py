@@ -86,7 +86,7 @@ from auth import get_current_role, require_roles
 from utils import validate_telemetry, UserRole
 from redis_client import set_telemetry, get_telemetry
 from db import telemetry_col
-from simulator import telemetry_simulator
+from telemetry_simulator import start_telemetry_simulator_if_needed
 
 
 
@@ -117,6 +117,10 @@ def get_live_telemetry(vehicle_id: str, role=Depends(get_current_role)):
             UserRole.OEM_ANALYST,
         ],
     )
+
+    # Lazy‑start the simulator only when a logged‑in CUSTOMER is requesting telemetry.
+    if role == UserRole.CUSTOMER:
+        start_telemetry_simulator_if_needed()
 
     telemetry = get_telemetry(vehicle_id)
     if not telemetry:

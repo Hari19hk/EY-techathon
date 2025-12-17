@@ -7,12 +7,10 @@ try:
     client.server_info()
     db = client[DB_NAME]
 except Exception as e:
-    print(f"Warning: Could not connect to MongoDB: {e}")
+    print(f"ERROR: Could not connect to MongoDB: {e}")
     print(f"MONGO_URI: {MONGO_URI}")
-    print("The server will start but database operations may fail.")
-    # Create a dummy client to prevent import errors
-    client = None
-    db = None
+    print("Please ensure MongoDB is running and the connection string is correct.")
+    raise  # Raise the error to prevent the server from starting with a broken DB
 
 # Collections
 users_col = db.users
